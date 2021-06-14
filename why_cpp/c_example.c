@@ -1,3 +1,4 @@
+#include <stdint.h>
 
 /* fake hal functions */
 void c_hal_write(uint8_t port, uint8_t pin, uint8_t value) {
@@ -28,23 +29,30 @@ struct c_gpio_config {
 struct c_gpio {
     struct c_if_gpio gpio_if;
     struct c_gpio_config cfg;
-}
+};
 
 void real_read(void *arg, uint8_t *value) {
-    struct c_gpio_config cfg = (struct c_gpio_config)arg;
-    hal_read(cfg.port, cfg.pin, *value);
+    struct c_gpio_config *cfg = (struct c_gpio_config *)arg;
+    *value = c_hal_read(cfg->port, cfg->pin);
 }
 void real_write(void *arg, uint8_t const value) {
-    struct c_gpio_config cfg = (struct c_gpio_config)arg;
-    hal_write(cfg.port, cfg.pin, value);
+    struct c_gpio_config *cfg = (struct c_gpio_config *)arg;
+    c_hal_write(cfg->port, cfg->pin, value);
+}
+
+void mock_read(void *arg, uint8_t *value) {
+    c_mock_read(*value);
+}
+void mock_write(void *arg, uint8_t const value) {
+    c_mock_write(value);
 }
 
 void do_something(struct c_gpio gpio) {
     /* read value */
     uint8_t value;
-    gpio.gpio_if->read((void *)&gpio.cfg, value);
+    gpio.gpio_if.read((void *)&gpio.cfg, &value);
     /* value gets processed and stuff happens */
-    gpio.gpio_if->write((void *)&gpio.cfg, value);
+    gpio.gpio_if.write((void *)&gpio.cfg, value);
 }
 
 void c_main() {
@@ -66,8 +74,8 @@ void c_main() {
 
 void cpp_utest() {
     struct c_if_gpio if_cfg;
-    if_cfg.read = c_mock_read;
-    if_cfg.write = c_mock_write;
+    if_cfg.read = mock_read;
+    if_cfg.write = mock_write;
 
     struct c_gpio gpio_obj;
     gpio_obj.gpio_if = if_cfg;
