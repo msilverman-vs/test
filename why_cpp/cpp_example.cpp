@@ -83,7 +83,7 @@ void cpp_main() {
         .pin = 1,
         .port = 3
     };
-    gpio real_gpio;
+    gpio real_gpio(gpio_config);
 
     something_fancy::config config = {
        .gpio = &real_gpio
