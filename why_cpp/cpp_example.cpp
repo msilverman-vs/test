@@ -95,10 +95,10 @@ void cpp_main() {
 
 /* our main in unit testing */
 void cpp_utest() {
-    gpio mock_gpio;
+    mock_gpio a_mock_gpio;
 
     something_fancy::config config = {
-       .gpio = &mock_gpio
+       .gpio = &a_mock_gpio
     };
 
     something_fancy something_fancy_obj(config);
